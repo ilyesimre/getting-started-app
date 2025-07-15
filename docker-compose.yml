@@ -1,30 +1,49 @@
-version: '3.8'
+version: '3.9'
 services:
   php-apache-environment:
     container_name: php-apache
-    build: ./php
+    image: phpdocker:custom
+    build: 
+      context: C:\wamp64\www\wilddetector
+      dockerfile: Dockerfile
     volumes:
       - ./php/src:/var/www/html/
     ports:
-      - 8000:80
+      - 80:80
 
   db:
-    container_name: mysql
     image: mysql:latest
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: DrZRo4Cn
-      MYSQL_DATABASE: wilddetector
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wd
       MYSQL_USER: root
-      MYSQL_PASSWORD: DrZRo4Cn
+      MYSQL_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
     ports:
-      - "9906:3306"
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - app-network
+
   phpmyadmin:
-    image: phpmyadmin:latest
-    ports:
-      - '8080:80'
-    restart: always
-    environment:
-      PMA_HOST: db
     depends_on:
       - db
+    image: phpmyadmin/phpmyadmin:latest
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db_data:
